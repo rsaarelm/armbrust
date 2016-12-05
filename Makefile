@@ -1,23 +1,26 @@
-TRIPLE=thumbv7em-none-eabi
-APP=arm-test
 GDB=arm-none-eabi-gdb
-QEMU=qemu-system-arm
-QEMUFLAGS := -M versatilepb -m 32M -nographic
+QEMU=/opt/gnuarmeclipse/qemu/bin/qemu-system-gnuarmeclipse
+QEMUFLAGS := -M STM32F4-Discovery -m 32M -nographic
 
-all: $(APP).bin
+TRIPLE=thumbv7em-none-eabi
+TARGET=target/$(TRIPLE)/debug/arm-test
 
-$(APP).bin: target/$(TRIPLE)/debug/$(APP)
-	arm-none-eabi-objcopy -O binary $< $@
-
-target/$(TRIPLE)/debug/$(APP):
+$(TARGET):
 	cargo build
 
-run: target/$(TRIPLE)/debug/$(APP)
+.PHONY: $(TARGET)
+
+arm-test.bin: $(TARGET)
+	arm-none-eabi-objcopy -O binary $< $@
+
+run: $(TARGET)
 	$(QEMU) $(QEMUFLAGS) -kernel $<
 
 # Start qemu for debugging.
-start: target/$(TRIPLE)/debug/$(APP)
-	$(QEMU) $(QEMUFLAGS) -kernel $< -s -S
-
-# Debug with:
-#     arm-none-eabi-gdb -ex "target remote localhost:1234"
+debug: $(TARGET)
+	@echo
+	@echo "Starting QEMU for debugging"
+	@echo "Connect using:"
+	@echo "    arm-none-eabi-gdb -ex 'target remote localhost:1234'"
+	@echo
+	$(QEMU) -s -S $(QEMUFLAGS) -kernel $<

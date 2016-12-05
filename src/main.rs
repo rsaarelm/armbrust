@@ -85,8 +85,6 @@ unsafe impl Sync for ExceptionTable {}
 /// I've currently punted on this for simplicity.
 pub unsafe extern fn reset_handler() -> ! {
     loop {
-        let uart = 0x101f1000 as *mut u32;
-        *uart = 'a' as u32;
     }
 }
 
@@ -96,10 +94,6 @@ pub unsafe extern fn reset_handler() -> ! {
 /// something else.
 extern "C" fn trap() {
     loop {
-        unsafe {
-            let uart = 0x101f1000 as *mut u32;
-            *uart = 'b' as u32;
-        }
     }
 }
 

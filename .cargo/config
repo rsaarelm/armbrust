@@ -4,7 +4,8 @@ target = "thumbv7em-none-eabi"
 [target.thumbv7em-none-eabi]
 linker = "arm-none-eabi-gcc"
 rustflags = [
-  "-C", "link-arg=-mcpu=arm926ej-s",
+  "-C", "link-arg=-mcpu=cortex-m4",
+  "-C", "link-arg=-mthumb",
   "-C", "link-arg=-Tlayout.ld",
   "-C", "link-arg=-nostartfiles",
 ]
