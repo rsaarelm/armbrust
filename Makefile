@@ -1,11 +1,11 @@
-TARGET=target/thumbv7m-none-eabi/debug/arm-test
+TARGET=target/thumbv7m-none-eabi/release/arm-test
 
 QEMU_ARGS=-cpu cortex-m3 -machine lm3s6965evb -nographic -monitor null
 
 .PHONY: $(TARGET)
 
 $(TARGET):
-	xargo build --target thumbv7m-none-eabi
+	xargo build --release --target thumbv7m-none-eabi
 
 $(TARGET).bin: $(TARGET)
 	arm-none-eabi-objcopy -O binary $< $@
