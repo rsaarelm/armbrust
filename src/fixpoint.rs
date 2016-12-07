@@ -37,20 +37,14 @@ impl Sub for FP {
 impl Mul<FP> for FP {
     type Output = FP;
     fn mul(self, other: FP) -> FP {
-        // XXX: These will overflow...
-        FP((self.0 * other.0) >> DECIMAL_BITS)
-        // TODO: Get 64-bit ops working.
-        //FP(((self.0 as i64 * other.0 as i64) >> DECIMAL_BITS) as i32)
+        FP(((self.0 as i64 * other.0 as i64) >> DECIMAL_BITS) as i32)
     }
 }
 
 impl Div<FP> for FP {
     type Output = FP;
     fn div(self, other: FP) -> FP {
-        // XXX: These will overflow...
-        FP((self.0 << DECIMAL_BITS) / other.0)
-        // TODO: Get 64-bit ops working.
-        //FP((((self.0 as i64) << DECIMAL_BITS) / other.0 as i64) as i32)
+        FP((((self.0 as i64) << DECIMAL_BITS) / other.0 as i64) as i32)
     }
 }
 
