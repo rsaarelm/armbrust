@@ -7,6 +7,11 @@ QEMU_ARGS=-cpu cortex-m3 -machine lm3s6965evb -nographic -monitor null
 $(TARGET):
 	xargo build --target thumbv7m-none-eabi
 
+$(TARGET).bin: $(TARGET)
+	arm-none-eabi-objcopy -O binary $< $@
+
+bin: $(TARGET).bin
+
 # Dump asm of target.
 dump: $(TARGET)
 	arm-none-eabi-objdump --demangle --disassemble $(TARGET)
