@@ -1,4 +1,4 @@
-use core::ops::{Add, Sub, Mul, Div};
+use core::ops::{Add, Sub, Mul, Div, Neg};
 
 const DECIMAL_BITS: usize = 8;
 
@@ -37,16 +37,28 @@ impl Sub for FP {
 impl Mul<FP> for FP {
     type Output = FP;
     fn mul(self, other: FP) -> FP {
-        FP(((self.0 as i64 * other.0 as i64) >> DECIMAL_BITS) as i32)
+        // XXX: These will overflow...
+        FP((self.0 * other.0) >> DECIMAL_BITS)
+        // TODO: Get 64-bit ops working.
+        //FP(((self.0 as i64 * other.0 as i64) >> DECIMAL_BITS) as i32)
     }
 }
 
 impl Div<FP> for FP {
     type Output = FP;
     fn div(self, other: FP) -> FP {
-        FP((((self.0 as i64) << DECIMAL_BITS) / other.0 as i64) as i32)
+        // XXX: These will overflow...
+        FP((self.0 << DECIMAL_BITS) / other.0)
+        // TODO: Get 64-bit ops working.
+        //FP((((self.0 as i64) << DECIMAL_BITS) / other.0 as i64) as i32)
     }
 }
+
+impl Neg for FP {
+    type Output = FP;
+    fn neg(self) -> FP { FP(-self.0) }
+}
+
 
 #[cfg(test)]
 mod tests {

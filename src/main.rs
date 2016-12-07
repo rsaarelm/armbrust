@@ -4,57 +4,54 @@
 
 use core::ops::{Add, Sub, Mul};
 
+mod fixpoint;
+
+use fixpoint::{FP, fp};
+
 #[export_name = "_reset"]
 pub extern "C" fn main() -> ! {
-    //let a = sqrt(123.0);
+    let v = v3(1, 2, 3);
+    let y = v.normalized();
     write("Hello, world!\n");
 
     loop {}
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 pub struct V3 {
-    x: f32,
-    y: f32,
-    z: f32,
+    x: FP,
+    y: FP,
+    z: FP,
 }
 
-// XXX: Rust sqrt method is in std lib, not available here.
-pub fn sqrt(a: f32) -> f32 {
-    // Newton's method.
-    let mut x = 1.0;
-    for _ in 0..5 {
-        x = x - (x * x - a) / (2.0 * x)
-    }
-    x
-}
-
-pub fn v3(x: f32, y: f32, z: f32) -> V3 { V3 { x: x, y: y, z: z } }
+pub fn v3(x: i32, y: i32, z: i32) -> V3 { V3::new(fp(x), fp(y), fp(z)) }
 
 impl V3 {
-    pub fn dot(&self, other: &V3) -> f32 { self.x * other.x + self.y * other.y + self.z * other.z }
+    pub fn new(x: FP, y: FP, z: FP) -> V3 { V3 { x: x, y: y, z: z } }
+
+    pub fn dot(&self, other: &V3) -> FP { self.x * other.x + self.y * other.y + self.z * other.z }
 
     pub fn normalized(&self) -> V3 {
-        *self * (1.0 / sqrt(self.dot(self)))
+        *self * (fp(1) / self.dot(self).sqrt())
     }
 }
 
 impl Add for V3 {
     type Output = V3;
 
-    fn add(self, other: V3) -> V3 { v3(self.x + other.x, self.y + other.y, self.z + other.z) }
+    fn add(self, other: V3) -> V3 { V3::new(self.x + other.x, self.y + other.y, self.z + other.z) }
 }
 
 impl Sub for V3 {
     type Output = V3;
 
-    fn sub(self, other: V3) -> V3 { v3(self.x - other.x, self.y - other.y, self.z - other.z) }
+    fn sub(self, other: V3) -> V3 { V3::new(self.x - other.x, self.y - other.y, self.z - other.z) }
 }
 
-impl Mul<f32> for V3 {
+impl Mul<FP> for V3 {
     type Output = V3;
 
-    fn mul(self, other: f32) -> V3 { v3(self.x * other, self.y * other, self.z * other) }
+    fn mul(self, other: FP) -> V3 { V3::new(self.x * other, self.y * other, self.z * other) }
 }
 
 struct Ray {
@@ -68,24 +65,24 @@ trait Body {
 
 struct Sphere {
     center: V3,
-    radius: f32,
+    radius: FP,
 }
 
 impl Body for Sphere {
     fn intersection(&self, ray: &Ray) -> Option<Ray> {
         let a = ray.dir.dot(&ray.dir);
         let to_sphere = ray.origin - self.center;
-        let b = 2.0 * ray.dir.dot(&to_sphere);
+        let b = fp(2) * ray.dir.dot(&to_sphere);
         let c = to_sphere.dot(&to_sphere) - self.radius * self.radius;
 
-        let delta = b * b - 4.0 * a * c;
+        let delta = b * b - fp(4) * a * c;
 
-        if delta <= 0.0 {
+        if delta <= fp(0) {
             return None;
         }
 
-        let p1 = (-b - sqrt(delta)) / 2.0 * a;
-        let p2 = (-b + sqrt(delta)) / 2.0 * a;
+        let p1 = (-b - delta.sqrt()) / fp(2) * a;
+        let p2 = (-b + delta.sqrt()) / fp(2) * a;
 
         let p = if p1 < p2 { p1 } else { p2 };
 
