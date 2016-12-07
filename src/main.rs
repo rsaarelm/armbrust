@@ -6,6 +6,7 @@ use core::ops::{Add, Sub, Mul};
 
 #[export_name = "_reset"]
 pub extern "C" fn main() -> ! {
+    //let a = sqrt(123.0);
     write("Hello, world!\n");
 
     loop {}
@@ -19,8 +20,13 @@ pub struct V3 {
 }
 
 // XXX: Rust sqrt method is in std lib, not available here.
-pub fn sqrt(x: f32) -> f32 {
-    unimplemented!();
+pub fn sqrt(a: f32) -> f32 {
+    // Newton's method.
+    let mut x = 1.0;
+    for _ in 0..5 {
+        x = x - (x * x - a) / (2.0 * x)
+    }
+    x
 }
 
 pub fn v3(x: f32, y: f32, z: f32) -> V3 { V3 { x: x, y: y, z: z } }
