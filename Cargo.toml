@@ -2,3 +2,7 @@
 name = "arm-test"
 version = "0.1.0"
 authors = [ "Risto Saarelma <risto.saarelma@iki.fi>" ]
+
+[dependencies.compiler_builtins]
+git = "https://github.com/rust-lang-nursery/compiler-builtins"
+features = ["weak"]

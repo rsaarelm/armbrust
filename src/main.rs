@@ -1,8 +1,12 @@
-#![feature(lang_items)]
+#![feature(lang_items, compiler_builtins_lib)]
+
 #![no_main]
 #![no_std]
 
+extern crate compiler_builtins;
+
 use core::ops::{Add, Sub, Mul};
+use core::fmt::{self, Write};
 
 mod fixpoint;
 
@@ -37,7 +41,8 @@ pub extern "C" fn main() -> ! {
         write("\n");
     }
 
-    write("Hello, world!\n");
+    let _ = writeln!(Uart, "Hello, world!");
+    let _ = writeln!(Uart, "PI is {}", 3.1415);
 
     loop {}
 }
@@ -136,4 +141,13 @@ pub fn putc(c: char) {
 mod lang_items {
     #[lang = "panic_fmt"]
     extern "C" fn panic_fmt() {}
+}
+
+struct Uart;
+
+impl Write for Uart {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        write(s);
+        Ok(())
+    }
 }
