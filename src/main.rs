@@ -10,8 +10,33 @@ use fixpoint::{FP, fp};
 
 #[export_name = "_reset"]
 pub extern "C" fn main() -> ! {
-    let v = v3(1, 2, 3);
-    let y = v.normalized();
+    let sphere = Sphere {
+        center: v3(0, 0, 20),
+        radius: fp(8)
+    };
+
+    let sun_dir = v3(1, -4, 1).normalized();
+
+    for y in -10..10 {
+        for x in -20..20 {
+            let ray = Ray {
+                origin: v3(0, 0, 0),
+                dir: v3(x, y, 10).normalized(),
+            };
+
+            if let Some(normal) = sphere.intersection(&ray) {
+                let light = normal.dir.dot(&sun_dir) * fp(2) + fp(1);
+                let gradient = ".,:;i%m#".as_bytes();
+                let idx = (light * fp(4)).to_i32();
+                let idx = if idx < 0 { 0 } else if idx > 7 { 7 } else { idx } as usize;
+                putc(gradient[idx] as char);
+            } else {
+                putc(' ');
+            }
+        }
+        write("\n");
+    }
+
     write("Hello, world!\n");
 
     loop {}
