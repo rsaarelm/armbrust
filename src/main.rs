@@ -10,11 +10,13 @@ pub extern "C" fn main() -> ! {
 }
 
 pub fn write(text: &str) {
-    const UART0: u32 = 0x4000C000;
+    for c in text.chars() { putc(c); }
+}
 
-    for c in text.chars() {
-        unsafe { *(UART0 as *mut u32) = c as u32 }
-    }
+#[inline]
+pub fn putc(c: char) {
+    const UART0: u32 = 0x4000C000;
+    unsafe { *(UART0 as *mut u32) = c as u32 }
 }
 
 mod lang_items {
