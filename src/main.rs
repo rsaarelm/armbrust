@@ -138,9 +138,10 @@ pub fn putc(c: char) {
     unsafe { *(UART0 as *mut u32) = c as u32 }
 }
 
-mod lang_items {
+pub mod lang_items {
     #[lang = "panic_fmt"]
-    extern "C" fn panic_fmt() {}
+    #[no_mangle]
+    pub extern "C" fn panic_fmt() {}
 }
 
 struct Uart;
