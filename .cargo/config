@@ -1,4 +1,4 @@
-[target.thumbv7m-none-eabi]
+[target.thumbv6m-none-eabi]
 rustflags = [
     "-C", "link-arg=-Tlayout.ld",
     "-C", "link-arg=-nostartfiles",
