@@ -121,11 +121,11 @@ impl GpioLayout {
         set_2bit(&mut self.ospeedr, p as u32, u as u32);
     }
 
-    pub fn set_bit(&mut self, p: Pin) {
+    pub fn set(&mut self, p: Pin) {
         self.bsrr = 1 << p as u32;
     }
 
-    pub fn unset_bit(&mut self, p: Pin) {
+    pub fn unset(&mut self, p: Pin) {
         self.bsrr = 1 << (p as u32) + 16;
     }
 
@@ -263,13 +263,13 @@ pub extern "C" fn main() -> ! {
 
     loop {
         unsafe {
-            (*GPIO).set_bit(Pin::P5);
+            (*GPIO).set(Pin::P5);
         }
         for _ in 0..200000 {
             nop();
         }
         unsafe {
-            (*GPIO).unset_bit(Pin::P5);
+            (*GPIO).unset(Pin::P5);
         }
         for _ in 0..200000 {
             nop();
