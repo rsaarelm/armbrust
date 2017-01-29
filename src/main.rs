@@ -31,6 +31,14 @@ pub enum Pin {
     P15,
 }
 
+// TODO: These should encode the GPIO id too, A, B, C etc...
+
+pub const USER_LED: Pin = Pin::P5;
+pub const USART1_TX: Pin = Pin::P9;
+pub const USART1_RX: Pin = Pin::P10;
+pub const USART2_TX: Pin = Pin::P2;
+pub const USART2_RX: Pin = Pin::P3;
+
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Mode {
     Input,
@@ -291,16 +299,17 @@ const USART2: *mut UsartLayout = 0x4000_4400 as *mut UsartLayout;
 pub extern "C" fn main() -> ! {
     unsafe {
         (*RCC).start(ClockSystem::GpioA);
+        (*RCC).start(ClockSystem::Usart2);
 
-        (*GPIOA).mode(Pin::P5, Mode::Output);
-        (*GPIOA).output_type(Pin::P5, OType::PushPull);
-        (*GPIOA).output_speed(Pin::P5, Speed::High);
-        (*GPIOA).set_pull_up_down(Pin::P5, Pup::Neither);
+        (*GPIOA).mode(USER_LED, Mode::Output);
+        (*GPIOA).output_type(USER_LED, OType::PushPull);
+        (*GPIOA).output_speed(USER_LED, Speed::High);
+        (*GPIOA).set_pull_up_down(USER_LED, Pup::Neither);
 
         loop {
-            (*GPIOA).set(Pin::P5);
+            (*GPIOA).set(USER_LED);
             busy_wait(200000);
-            (*GPIOA).unset(Pin::P5);
+            (*GPIOA).unset(USER_LED);
             busy_wait(200000);
         }
     }
