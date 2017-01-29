@@ -5,6 +5,12 @@
 
 extern crate compiler_builtins;
 
+pub mod lang_items {
+    #[lang = "panic_fmt"]
+    #[no_mangle]
+    pub extern "C" fn panic_fmt() {}
+}
+
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Pin {
     P0,
@@ -128,42 +134,125 @@ impl GpioLayout {
     // for docs.
 }
 
-
-
 const GPIO: *mut GpioLayout = 0x4800_0000 as *mut GpioLayout;
 
-pub mod lang_items {
-    #[lang = "panic_fmt"]
-    #[no_mangle]
-    pub extern "C" fn panic_fmt() {}
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum ClockSystem {
+    Dma1,
+    Sram,
+    Flitf,
+    Crc,
+    GpioA,
+    GpioB,
+    GpioC,
+    GpioD,
+    GpioF,
+    Ts,
+    Syscfg,
+    Adc1,
+    Tim1,
+    Sp1,
+    Usart1,
+    Timi5,
+    Timi6,
+    Timi17,
+    Dbcmcu,
+    Timer2,
+    Timer3,
+    Timer6,
+    Timer14,
+    WindowWatchdog,
+    Spi2,
+    Usart2,
+    I2c1,
+    I2c2,
+    Pwr,
+    Dac,
+    Cec,
 }
 
-fn peek(addr: u32) -> u32 {
-    unsafe { *(addr as usize as *const u32) }
+#[repr(C)]
+struct RccLayout {
+    /// RCC clock control register,                                  Address offset: 0x00
+    cr: u32,
+    /// RCC clock configuration register,                            Address offset: 0x04
+    cfgr: u32,
+    /// RCC clock interrupt register,                                Address offset: 0x08
+    cir: u32,
+    /// RCC APB2 peripheral reset register,                          Address offset: 0x0C
+    apb2rstr: u32,
+    /// RCC APB1 peripheral reset register,                          Address offset: 0x10
+    apb1rstr: u32,
+    /// RCC AHB peripheral clock register,                           Address offset: 0x14
+    ahbenr: u32,
+    /// RCC APB2 peripheral clock enable register,                   Address offset: 0x18
+    apb2enr: u32,
+    /// RCC APB1 peripheral clock enable register,                   Address offset: 0x1C
+    apb1enr: u32,
+    /// RCC Backup domain control register,                          Address offset: 0x20
+    bdcr: u32,
+    /// RCC clock control & status register,                         Address offset: 0x24
+    csr: u32,
+    /// RCC AHB peripheral reset register,                           Address offset: 0x28
+    ahbrstr: u32,
+    /// RCC clock configuration register 2,                          Address offset: 0x2C
+    cfgr2: u32,
+    /// RCC clock configuration register 3,                          Address offset: 0x30
+    cfgr3: u32,
+    /// RCC clock control register 2,                                Address offset: 0x34
+    cr2: u32,
 }
 
-fn poke(addr: u32, word: u32) {
-    unsafe {
-        let addr = addr as usize as *mut u32;
-        *addr = word;
+impl RccLayout {
+    pub fn start_clock(&mut self, sys: ClockSystem) {
+        use ClockSystem::*;
+        match sys {
+            Dma1 => self.ahbenr |= 0x0000_0001,
+            Sram => self.ahbenr |= 0x0000_0004,
+            Flitf => self.ahbenr |= 0x0000_0010,
+            Crc => self.ahbenr |= 0x0000_0040,
+            GpioA => self.ahbenr |= 0x0002_0000,
+            GpioB => self.ahbenr |= 0x0004_0000,
+            GpioC => self.ahbenr |= 0x0008_0000,
+            GpioD => self.ahbenr |= 0x0010_0000,
+            GpioF => self.ahbenr |= 0x0040_0000,
+            Ts => self.ahbenr |= 0x0100_0000,
+            _ => {}
+            // TODO, tag the rest to APB2ENR, APB1ENR registers.
+            //
+            // Syscfg,
+            // Adc1,
+            // Tim1,
+            // Sp1,
+            // Usart1,
+            // Timi5,
+            // Timi6,
+            // Timi17,
+            // Dbcmcu,
+            // Timer2,
+            // Timer3,
+            // Timer6,
+            // Timer14,
+            // WindowWatchdog,
+            // Spi2,
+            // Usart2,
+            // I2c1,
+            // I2c2,
+            // Pwr,
+            // Dac,
+            // Cec
+            //
+        }
     }
 }
 
-
-
-#[inline(never)]
-fn nop() {
-    unsafe {
-        asm!("NOP");
-    }
-}
-
-const RCC: u32 = 0x4002_1000;
+const RCC: *mut RccLayout = 0x4002_1000 as *mut RccLayout;
 
 #[export_name = "_reset"]
 pub extern "C" fn main() -> ! {
-    let ra = peek(RCC + 0x14);
-    poke(RCC + 0x14, ra | 1 << 17); // enable port A
+    unsafe {
+        (*RCC).start_clock(ClockSystem::GpioA);
+    }
 
     unsafe {
         (*GPIO).mode(Pin::P5, Mode::Output);
@@ -173,14 +262,25 @@ pub extern "C" fn main() -> ! {
     }
 
     loop {
-        unsafe { (*GPIO).set_bit(Pin::P5); }
+        unsafe {
+            (*GPIO).set_bit(Pin::P5);
+        }
         for _ in 0..200000 {
             nop();
         }
-        unsafe { (*GPIO).unset_bit(Pin::P5); }
+        unsafe {
+            (*GPIO).unset_bit(Pin::P5);
+        }
         for _ in 0..200000 {
             nop();
         }
+    }
+}
+
+#[inline(never)]
+fn nop() {
+    unsafe {
+        asm!("NOP");
     }
 }
 
