@@ -134,7 +134,7 @@ impl GpioLayout {
     // for docs.
 }
 
-const GPIO: *mut GpioLayout = 0x4800_0000 as *mut GpioLayout;
+const GPIOA: *mut GpioLayout = 0x4800_0000 as *mut GpioLayout;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum ClockSystem {
@@ -255,21 +255,21 @@ pub extern "C" fn main() -> ! {
     }
 
     unsafe {
-        (*GPIO).mode(Pin::P5, Mode::Output);
-        (*GPIO).output_type(Pin::P5, OType::PushPull);
-        (*GPIO).output_speed(Pin::P5, Speed::High);
-        (*GPIO).set_pull_up_down(Pin::P5, Pup::Neither);
+        (*GPIOA).mode(Pin::P5, Mode::Output);
+        (*GPIOA).output_type(Pin::P5, OType::PushPull);
+        (*GPIOA).output_speed(Pin::P5, Speed::High);
+        (*GPIOA).set_pull_up_down(Pin::P5, Pup::Neither);
     }
 
     loop {
         unsafe {
-            (*GPIO).set(Pin::P5);
+            (*GPIOA).set(Pin::P5);
         }
         for _ in 0..200000 {
             nop();
         }
         unsafe {
-            (*GPIO).unset(Pin::P5);
+            (*GPIOA).unset(Pin::P5);
         }
         for _ in 0..200000 {
             nop();
