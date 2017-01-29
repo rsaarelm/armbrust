@@ -172,7 +172,7 @@ pub enum ClockSystem {
 }
 
 #[repr(C)]
-struct RccLayout {
+pub struct RccLayout {
     /// RCC clock control register,                                  Address offset: 0x00
     cr: u32,
     /// RCC clock configuration register,                            Address offset: 0x04
@@ -204,7 +204,8 @@ struct RccLayout {
 }
 
 impl RccLayout {
-    pub fn start_clock(&mut self, sys: ClockSystem) {
+    /// Start clock for a system.
+    pub fn start(&mut self, sys: ClockSystem) {
         use ClockSystem::*;
         match sys {
             Dma1 => self.ahbenr |= 0x0000_0001,
@@ -217,14 +218,11 @@ impl RccLayout {
             GpioD => self.ahbenr |= 0x0010_0000,
             GpioF => self.ahbenr |= 0x0040_0000,
             Ts => self.ahbenr |= 0x0100_0000,
-            _ => {}
-            // TODO, tag the rest to APB2ENR, APB1ENR registers.
-            //
             // Syscfg,
             // Adc1,
             // Tim1,
             // Sp1,
-            // Usart1,
+            Usart1 => self.apb2enr |= 0x0000_4000,
             // Timi5,
             // Timi6,
             // Timi17,
@@ -235,13 +233,30 @@ impl RccLayout {
             // Timer14,
             // WindowWatchdog,
             // Spi2,
-            // Usart2,
+            Usart2 => self.apb1enr |= 0x0002_0000,
             // I2c1,
             // I2c2,
             // Pwr,
             // Dac,
             // Cec
-            //
+            _ => {} // TODO: Fill in the rest of the constants and remove this.
+        }
+    }
+
+    /// Reset clock for a system.
+    pub fn reset(&mut self, sys: ClockSystem) {
+        use ClockSystem::*;
+        match sys {
+            GpioA => self.ahbrstr |= 0x0002_0000,
+            GpioB => self.ahbrstr |= 0x0004_0000,
+            GpioC => self.ahbrstr |= 0x0008_0000,
+            GpioD => self.ahbrstr |= 0x0001_0000,
+            GpioF => self.ahbrstr |= 0x0004_0000,
+            Ts => self.ahbrstr |= 0x0010_0000,
+            Usart1 => self.apb2rstr |= 0x0000_4000,
+            Usart2 => self.apb1rstr |= 0x0002_0000,
+            // TODO: The rest
+            _ => {} // The catch-all is needed, this does not cover all items `start` does.
         }
     }
 }
@@ -251,7 +266,7 @@ const RCC: *mut RccLayout = 0x4002_1000 as *mut RccLayout;
 #[export_name = "_reset"]
 pub extern "C" fn main() -> ! {
     unsafe {
-        (*RCC).start_clock(ClockSystem::GpioA);
+        (*RCC).start(ClockSystem::GpioA);
     }
 
     unsafe {
