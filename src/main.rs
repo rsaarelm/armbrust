@@ -137,6 +137,20 @@ impl GpioLayout {
         self.bsrr = 1 << (p as u32) + 16;
     }
 
+    // TODO: What's the value here?
+    pub fn alternate_function(&mut self, p: Pin, n: u32) {
+        debug_assert!(n < 16);
+        let p = p as u32;
+        if p < 8 {
+            self.afr[0] &= !(15 << (p * 4));
+            self.afr[0] |= n << (p * 4);
+        } else {
+            let p = p - 8;
+            self.afr[1] &= !(15 << (p * 4));
+            self.afr[1] |= n << (p * 4);
+        }
+    }
+
     // TODO: Do the rest of the fields
     // See eg. http://hertaville.com/stm32f0-gpio-tutorial-part-1.html
     // for docs.
@@ -277,6 +291,7 @@ pub struct UsartLayout {
     cr1: u32,
     cr2: u32,
     cr3: u32,
+    // Baud rate
     brr: u16,
     _reserved1: u16,
     gtpr: u16,
@@ -292,6 +307,30 @@ pub struct UsartLayout {
     _reserved5: u16,
 }
 
+impl UsartLayout {
+    pub fn send(&mut self, c: u16) {
+        loop {
+            if self.isr & (1<<7) != 0 { break; }
+        }
+
+        self.tdr = c;
+    }
+
+    pub fn recv(&self) -> u16 {
+        loop {
+            if self.isr & (1<<5) != 0 { break; }
+        }
+
+        self.rdr
+    }
+
+    pub fn print(&mut self, s: &str) {
+        for c in s.chars() {
+            self.send(c as u16);
+        }
+    }
+}
+
 const USART1: *mut UsartLayout = 0x4001_3800 as *mut UsartLayout;
 const USART2: *mut UsartLayout = 0x4000_4400 as *mut UsartLayout;
 
@@ -301,12 +340,35 @@ pub extern "C" fn main() -> ! {
         (*RCC).start(ClockSystem::GpioA);
         (*RCC).start(ClockSystem::Usart2);
 
+        // TODO: Pinout config API that merges the settings for different outputs to one mask so
+        // that there are fewer GPIO writes.
+
         (*GPIOA).mode(USER_LED, Mode::Output);
         (*GPIOA).output_type(USER_LED, OType::PushPull);
         (*GPIOA).output_speed(USER_LED, Speed::High);
         (*GPIOA).set_pull_up_down(USER_LED, Pup::Neither);
 
+        (*GPIOA).mode(USART1_TX, Mode::Alternate);
+        (*GPIOA).mode(USART1_RX, Mode::Alternate);
+        (*GPIOA).output_type(USART1_TX, OType::PushPull);
+        (*GPIOA).output_type(USART1_RX, OType::PushPull);
+        (*GPIOA).output_speed(USART1_TX, Speed::High);
+        (*GPIOA).output_speed(USART1_RX, Speed::High);
+        (*GPIOA).set_pull_up_down(USART1_TX, Pup::Neither);
+        (*GPIOA).set_pull_up_down(USART1_RX, Pup::Neither);
+        (*GPIOA).alternate_function(USART1_TX, 1);
+        (*GPIOA).alternate_function(USART1_RX, 1);
+
+        (*RCC).reset(ClockSystem::Usart2);
+
+        // Set baud rate, we want 9600 for present widget.
+        // Not sure what the system clock is, but the example code talks about 8 MHz,
+        (*USART1).brr = 833;
+        (*USART1).cr1 = 0b111;
+
+        //(*USART1).print("\x1B[m\x1B[2J");
         loop {
+            //(*USART1).print("test");
             (*GPIOA).set(USER_LED);
             busy_wait(200000);
             (*GPIOA).unset(USER_LED);
