@@ -263,32 +263,52 @@ impl RccLayout {
 
 const RCC: *mut RccLayout = 0x4002_1000 as *mut RccLayout;
 
+
+#[repr(C)]
+pub struct UsartLayout {
+    cr1: u32,
+    cr2: u32,
+    cr3: u32,
+    brr: u16,
+    _reserved1: u16,
+    gtpr: u16,
+    _reserved2: u16,
+    rtor: u32,
+    rqr: u16,
+    _reserved3: u16,
+    isr: u32,
+    icr: u32,
+    rdr: u16,
+    _reserved4: u16,
+    tdr: u16,
+    _reserved5: u16,
+}
+
+const USART1: *mut UsartLayout = 0x4001_3800 as *mut UsartLayout;
+const USART2: *mut UsartLayout = 0x4000_4400 as *mut UsartLayout;
+
 #[export_name = "_reset"]
 pub extern "C" fn main() -> ! {
     unsafe {
         (*RCC).start(ClockSystem::GpioA);
-    }
 
-    unsafe {
         (*GPIOA).mode(Pin::P5, Mode::Output);
         (*GPIOA).output_type(Pin::P5, OType::PushPull);
         (*GPIOA).output_speed(Pin::P5, Speed::High);
         (*GPIOA).set_pull_up_down(Pin::P5, Pup::Neither);
-    }
 
-    loop {
-        unsafe {
+        loop {
             (*GPIOA).set(Pin::P5);
-        }
-        for _ in 0..200000 {
-            nop();
-        }
-        unsafe {
+            busy_wait(200000);
             (*GPIOA).unset(Pin::P5);
+            busy_wait(200000);
         }
-        for _ in 0..200000 {
-            nop();
-        }
+    }
+}
+
+fn busy_wait(count: usize) {
+    for _ in 0..count {
+        nop();
     }
 }
 
