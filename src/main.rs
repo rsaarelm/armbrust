@@ -114,6 +114,18 @@ impl GpioLayout {
     pub fn set_pull_up_down(&mut self, p: Pin, u: Pup) {
         set_2bit(&mut self.ospeedr, p as u32, u as u32);
     }
+
+    pub fn set_bit(&mut self, p: Pin) {
+        self.bsrr = 1 << p as u32;
+    }
+
+    pub fn unset_bit(&mut self, p: Pin) {
+        self.bsrr = 1 << (p as u32) + 16;
+    }
+
+    // TODO: Do the rest of the fields
+    // See eg. http://hertaville.com/stm32f0-gpio-tutorial-part-1.html
+    // for docs.
 }
 
 
@@ -147,7 +159,6 @@ fn nop() {
 }
 
 const RCC: u32 = 0x4002_1000;
-const GPIOA: u32 = 0x4800_0000;
 
 #[export_name = "_reset"]
 pub extern "C" fn main() -> ! {
@@ -162,11 +173,11 @@ pub extern "C" fn main() -> ! {
     }
 
     loop {
-        poke(GPIOA + 0x18, (1 << 5) << 0);
+        unsafe { (*GPIO).set_bit(Pin::P5); }
         for _ in 0..200000 {
             nop();
         }
-        poke(GPIOA + 0x18, (1 << 5) << 16);
+        unsafe { (*GPIO).unset_bit(Pin::P5); }
         for _ in 0..200000 {
             nop();
         }
