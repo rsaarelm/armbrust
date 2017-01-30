@@ -1,9 +1,12 @@
 #![feature(lang_items, compiler_builtins_lib, asm)]
+#![feature(core_intrinsics)]
 
 #![no_main]
 #![no_std]
 
 extern crate compiler_builtins;
+
+use core::intrinsics::{volatile_load, volatile_store};
 
 pub mod lang_items {
     #[lang = "panic_fmt"]
@@ -311,16 +314,20 @@ pub struct UsartLayout {
 
 impl UsartLayout {
     pub fn send(&mut self, c: u16) {
-        loop {
-            if self.isr & (1<<7) != 0 { break; }
+        unsafe {
+            loop {
+                if volatile_load(&self.isr) & (1<<7) != 0 { break; }
+            }
         }
 
         self.tdr = c;
     }
 
     pub fn recv(&self) -> u16 {
-        loop {
-            if self.isr & (1<<5) != 0 { break; }
+        unsafe {
+            loop {
+                if volatile_load(&self.isr) & (1<<5) != 0 { break; }
+            }
         }
 
         self.rdr
