@@ -353,6 +353,64 @@ impl UsartLayout {
 const USART1: *mut UsartLayout = 0x4001_3800 as *mut UsartLayout;
 const USART2: *mut UsartLayout = 0x4000_4400 as *mut UsartLayout;
 
+#[derive(Copy, Clone, Eq, PartialEq)]
+pub enum Color {
+    Black,
+    Red,
+    Green,
+    Yellow,
+    Blue,
+    Magenta,
+    Cyan,
+    White,
+}
+
+#[derive(Copy, Clone)]
+struct Cell {
+    c: u8,
+    fore: Color,
+    back: Color,
+}
+
+const SCREEN_W: usize = 32;
+const SCREEN_H: usize = 16;
+
+struct Screen(pub [[Cell; SCREEN_W]; SCREEN_H]);
+
+impl Screen {
+    pub fn new() -> Screen {
+        Screen([[Cell { c: 0, fore: Color::White, back: Color::Black }; SCREEN_W]; SCREEN_H])
+    }
+
+    pub fn blit(&self) {
+        let mut prev_f = 0;
+        let mut prev_b = 0;
+        unsafe {
+            (*USART1).print("\x1B[H");
+            for y in 0..SCREEN_H {
+                for x in 0..SCREEN_W {
+                    // XXX: Printing to the last position will scroll the top line off the screen.
+                    // Is there a way to fill it?
+                    if y == SCREEN_H - 1 && x == SCREEN_W - 1 { break; }
+
+                    let f = '0' as u16 + self.0[y][x].fore as u16;
+                    let b = '0' as u16 + self.0[y][x].back as u16;
+                    if f != prev_f || b != prev_b {
+                        (*USART1).print("\x1B[3");
+                        (*USART1).send(f);
+                        (*USART1).print(";4");
+                        (*USART1).send(b);
+                        (*USART1).print("m");
+                        prev_f = f;
+                        prev_b = b;
+                    }
+                    (*USART1).send(self.0[y][x].c as u16);
+                }
+            }
+        }
+    }
+}
+
 #[export_name = "_reset"]
 pub extern "C" fn main() -> ! {
     unsafe {
@@ -394,20 +452,15 @@ pub extern "C" fn main() -> ! {
         (*USART2).brr = (CLOCK_FREQ_HZ / 9600) as u16;
         (*USART2).cr1 = 0b1101;
 
-        (*USART1).print("\x1B[m\x1B[2J");
-        (*USART1).print("\x1B[31;40m");
-        (*USART1).print("HELLO RUST\n");
-        loop {
-            /*
-            while let Some(c) = (*USART2).poll() {
-                (*USART1).send(c);
-            }
-            */
+        let mut screen = Screen::new();
 
-            (*GPIOA).set(USER_LED);
-            busy_wait(200000);
-            (*GPIOA).unset(USER_LED);
-            busy_wait(200000);
+        screen.0[5][10].c = 32;
+        loop {
+            screen.0[5][10].c += 1;
+            if screen.0[5][10].c == 160 {
+                screen.0[5][10].c = 32;
+            }
+            screen.blit();
         }
     }
 }
