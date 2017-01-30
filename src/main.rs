@@ -338,7 +338,7 @@ const USART2: *mut UsartLayout = 0x4000_4400 as *mut UsartLayout;
 pub extern "C" fn main() -> ! {
     unsafe {
         (*RCC).start(ClockSystem::GpioA);
-        (*RCC).start(ClockSystem::Usart2);
+        (*RCC).start(ClockSystem::Usart1);
 
         // TODO: Pinout config API that merges the settings for different outputs to one mask so
         // that there are fewer GPIO writes.
@@ -359,7 +359,7 @@ pub extern "C" fn main() -> ! {
         (*GPIOA).alternate_function(USART1_TX, 1);
         (*GPIOA).alternate_function(USART1_RX, 1);
 
-        (*RCC).reset(ClockSystem::Usart2);
+        (*RCC).reset(ClockSystem::Usart1);
 
         // Set baud rate, we want 9600 for present widget.
         // Not sure what the system clock is, but the example code talks about 8 MHz,
