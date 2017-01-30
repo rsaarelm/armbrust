@@ -333,6 +333,16 @@ impl UsartLayout {
         self.rdr
     }
 
+    pub fn poll(&self) -> Option<u16> {
+        unsafe {
+            if volatile_load(&self.isr) & (1<<5) != 0 {
+                Some(self.rdr)
+            } else {
+                None
+            }
+        }
+    }
+
     pub fn print(&mut self, s: &str) {
         for c in s.chars() {
             self.send(c as u16);
@@ -358,6 +368,19 @@ pub extern "C" fn main() -> ! {
         (*GPIOA).output_speed(USER_LED, Speed::High);
         (*GPIOA).set_pull_up_down(USER_LED, Pup::Neither);
 
+        (*GPIOA).mode(USART1_TX, Mode::Alternate);
+        (*GPIOA).mode(USART1_RX, Mode::Alternate);
+        (*GPIOA).output_type(USART1_TX, OType::PushPull);
+        (*GPIOA).output_type(USART1_RX, OType::PushPull);
+        (*GPIOA).output_speed(USART1_TX, Speed::High);
+        (*GPIOA).output_speed(USART1_RX, Speed::High);
+        (*GPIOA).set_pull_up_down(USART1_TX, Pup::Neither);
+        (*GPIOA).set_pull_up_down(USART1_RX, Pup::Neither);
+        (*GPIOA).alternate_function(USART1_TX, 1);
+        (*GPIOA).alternate_function(USART1_RX, 1);
+        (*USART1).brr = (CLOCK_FREQ_HZ / 9600) as u16;
+        (*USART1).cr1 = 0b1101;
+
         (*GPIOA).mode(USART2_TX, Mode::Alternate);
         (*GPIOA).mode(USART2_RX, Mode::Alternate);
         (*GPIOA).output_type(USART2_TX, OType::PushPull);
@@ -368,13 +391,19 @@ pub extern "C" fn main() -> ! {
         (*GPIOA).set_pull_up_down(USART2_RX, Pup::Neither);
         (*GPIOA).alternate_function(USART2_TX, 1);
         (*GPIOA).alternate_function(USART2_RX, 1);
-
         (*USART2).brr = (CLOCK_FREQ_HZ / 9600) as u16;
         (*USART2).cr1 = 0b1101;
 
-        //(*USART2).print("\x1B[m\x1B[2J");
+        (*USART1).print("\x1B[m\x1B[2J");
+        (*USART1).print("\x1B[31;40m");
+        (*USART1).print("HELLO RUST\n");
         loop {
-            (*USART2).print("ping\n\r");
+            /*
+            while let Some(c) = (*USART2).poll() {
+                (*USART1).send(c);
+            }
+            */
+
             (*GPIOA).set(USER_LED);
             busy_wait(200000);
             (*GPIOA).unset(USER_LED);
