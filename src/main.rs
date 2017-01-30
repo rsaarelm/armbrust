@@ -11,6 +11,8 @@ pub mod lang_items {
     pub extern "C" fn panic_fmt() {}
 }
 
+pub const CLOCK_FREQ_HZ: u32 = 8_000_000;
+
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Pin {
     P0,
@@ -361,9 +363,7 @@ pub extern "C" fn main() -> ! {
 
         (*RCC).reset(ClockSystem::Usart1);
 
-        // Set baud rate, we want 9600 for present widget.
-        // Not sure what the system clock is, but the example code talks about 8 MHz,
-        (*USART1).brr = 833;
+        (*USART1).brr = (CLOCK_FREQ / 9600) as u16;
         (*USART1).cr1 = 0b111;
 
         //(*USART1).print("\x1B[m\x1B[2J");
