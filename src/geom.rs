@@ -81,22 +81,30 @@ impl Frustum {
 }
 
 
+#[derive(Copy, Clone)]
 pub struct Ray {
     pub origin: V3,
     pub dir: V3,
 }
 
-pub trait Body {
-    fn intersection(&self, ray: &Ray) -> Option<Ray>;
+#[derive(Copy, Clone)]
+pub struct Intersection {
+    pub distance: FP,
+    pub normal: V3,
 }
 
+pub trait Body {
+    fn intersection(&self, ray: &Ray) -> Option<Intersection>;
+}
+
+#[derive(Copy, Clone)]
 pub struct Sphere {
     pub center: V3,
     pub radius: FP,
 }
 
 impl Body for Sphere {
-    fn intersection(&self, ray: &Ray) -> Option<Ray> {
+    fn intersection(&self, ray: &Ray) -> Option<Intersection> {
         let a = ray.dir.dot(&ray.dir);
         let to_sphere = ray.origin - self.center;
         let b = fp(2) * ray.dir.dot(&to_sphere);
@@ -120,29 +128,30 @@ impl Body for Sphere {
         let pos = ray.origin + ray.dir * p;
         let normal = (pos - self.center).normalized();
 
-        Some(Ray {
-            origin: pos,
-            dir: normal,
+        Some(Intersection {
+            distance: p,
+            normal: normal,
         })
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct Plane {
     pub normal: V3,
     pub offset: FP,
 }
 
 impl Body for Plane {
-    fn intersection(&self, ray: &Ray) -> Option<Ray> {
+    fn intersection(&self, ray: &Ray) -> Option<Intersection> {
         let a = self.normal.dot(&ray.dir);
 
         if a.abs() > FP(1) {
             let p0 = self.normal * self.offset;
             let d = (p0 - ray.origin).dot(&self.normal) / a;
             if d >= fp(0) {
-                return Some(Ray {
-                    origin: ray.origin + ray.dir * d,
-                    dir: self.normal,
+                return Some(Intersection {
+                    distance: d,
+                    normal: self.normal,
                 });
             }
         }
