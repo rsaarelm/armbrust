@@ -82,16 +82,14 @@ impl Vga {
             let x = ((char_offset % SCREEN_W) * 2) as u32;
             let y = ((char_offset / SCREEN_W) * 4) as u32;
             // Collect the pixels that the current character slot will cover.
-            let pixels = [
-                pixel_f(x + 1, y + 3) as u8,
-                pixel_f(x, y + 3) as u8,
-                pixel_f(x + 1, y + 2) as u8,
-                pixel_f(x, y + 2) as u8,
-                pixel_f(x + 1, y + 1) as u8,
-                pixel_f(x, y + 1) as u8,
-                pixel_f(x + 1, y) as u8,
-                pixel_f(x, y) as u8,
-            ];
+            let pixels = [pixel_f(x + 1, y + 3) as u8,
+                          pixel_f(x, y + 3) as u8,
+                          pixel_f(x + 1, y + 2) as u8,
+                          pixel_f(x, y + 2) as u8,
+                          pixel_f(x + 1, y + 1) as u8,
+                          pixel_f(x, y + 1) as u8,
+                          pixel_f(x + 1, y) as u8,
+                          pixel_f(x, y) as u8];
 
             // Construct the rgb masks.
             let mut r = 0u8;
@@ -99,9 +97,15 @@ impl Vga {
             let mut b = 0u8;
 
             for i in 0..8 {
-                if pixels[i] & 0b001 != 0 { r |= (1 << i); }
-                if pixels[i] & 0b010 != 0 { g |= (1 << i); }
-                if pixels[i] & 0b100 != 0 { b |= (1 << i); }
+                if pixels[i] & 0b001 != 0 {
+                    r |= 1 << i;
+                }
+                if pixels[i] & 0b010 != 0 {
+                    g |= 1 << i;
+                }
+                if pixels[i] & 0b100 != 0 {
+                    b |= 1 << i;
+                }
             }
 
             putc(PORT, r as char);
@@ -114,5 +118,4 @@ impl Vga {
 
         puts(PORT, "\x1bT"); // Tricoder mode end
     }
-
 }
