@@ -29,10 +29,10 @@ pub extern "C" fn main() -> ! {
 
     vga.clear();
     vga.draw_screen(|x, y| {
-        if x == 0 && y == 0 {
-            White
+        if x == 0 && y == 2 {
+            return Red;
         } else {
-            Red
+            return Green;
         }
     });
 
