@@ -3,7 +3,7 @@ use core::ops::{Add, Sub, Mul, Div, Neg};
 const DECIMAL_BITS: usize = 8;
 
 #[derive(Copy, Clone, PartialOrd, Ord, PartialEq, Eq)]
-pub struct FP(i32);
+pub struct FP(pub i32);
 
 pub fn fp(a: i32) -> FP {
     FP(a << DECIMAL_BITS)
@@ -21,6 +21,14 @@ impl FP {
 
     pub fn to_i32(self) -> i32 {
         self.0 >> DECIMAL_BITS
+    }
+
+    pub fn abs(self) -> FP {
+        if self.0 < 0 {
+            FP(-self.0)
+        } else {
+            self
+        }
     }
 }
 

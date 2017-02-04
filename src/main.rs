@@ -22,6 +22,7 @@ mod vga;
 use stm32f030r8 as board;
 use vga::Color::*;
 use math::{fp, FP};
+use geom::{v3, Body};
 
 #[export_name = "_reset"]
 pub extern "C" fn main() -> ! {
@@ -30,24 +31,50 @@ pub extern "C" fn main() -> ! {
     let vga = vga::Vga;
 
     vga.clear();
-    vga.draw_screen(|x, y| {
-        let x = (fp(x as i32) - fp(48)) / fp(13) / fp(2);
-        let y = (fp(y as i32) - fp(32)) / fp(16) / fp(2);
-        let m = mandelbrot(x, y);
 
-        match m {
-            0 => White,
-            1..10 => Blue,
-            11..20 => Magenta,
-            21..30 => Red,
-            31..40 => Green,
-            41..50 => Yellow,
-            51..99 => Cyan,
-            _ => Black,
+    let frustum = geom::Frustum {
+        origin: v3(0, 0, 3),
+        dir: v3(1, 2, 0).normalized(),
+        up: v3(0, 0, 1),
+    };
+
+    let ground = geom::Plane {
+        normal: v3(0, 0, 1),
+        offset: fp(0),
+    };
+
+    vga.draw_screen(|x, y| {
+        let ray = frustum.ray(x, y);
+
+        if let Some(r) = ground.intersection(&ray) {
+            if (r.origin.x / fp(8)).to_i32() % 2 != (r.origin.y / fp(8)).to_i32() % 2 {
+                Yellow
+            } else {
+                Green
+            }
+        } else {
+           Cyan
         }
     });
 
     loop {
+    }
+}
+
+fn draw_mandelbrot(x: u32, y: u32) -> vga::Color {
+    let x = (fp(x as i32) - fp(48)) / fp(13) / fp(2);
+    let y = (fp(y as i32) - fp(32)) / fp(16) / fp(2);
+    let m = mandelbrot(x, y);
+
+    match m {
+        0 => White,
+        1..10 => Blue,
+        11..20 => Magenta,
+        21..30 => Red,
+        31..40 => Green,
+        41..50 => Yellow,
+        51..99 => Cyan,
+        _ => Black,
     }
 }
 

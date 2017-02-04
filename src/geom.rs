@@ -3,9 +3,9 @@ use math::{fp, FP};
 
 #[derive(Copy, Clone)]
 pub struct V3 {
-    x: FP,
-    y: FP,
-    z: FP,
+    pub x: FP,
+    pub y: FP,
+    pub z: FP,
 }
 
 pub fn v3(x: i32, y: i32, z: i32) -> V3 {
@@ -23,6 +23,10 @@ impl V3 {
 
     pub fn normalized(&self) -> V3 {
         *self * (fp(1) / self.dot(self).sqrt())
+    }
+
+    pub fn cross(&self, other: &V3) -> V3 {
+        V3::new(self.y * other.z - self.z * other.y, self.z * other.x - self.x * other.z, self.x * other.y - self.y * other.x)
     }
 }
 
@@ -50,18 +54,40 @@ impl Mul<FP> for V3 {
     }
 }
 
-struct Ray {
-    origin: V3,
-    dir: V3,
+
+pub struct Frustum {
+    pub origin: V3,
+    pub dir: V3,
+    pub up: V3,
 }
 
-trait Body {
+impl Frustum {
+    // XXX: A bunch of hardcoding
+    pub fn ray(&self, screen_x: u32, screen_y: u32) -> Ray {
+        let x = (fp(screen_x as i32) - fp(32)) / fp(16);
+        let y = (fp(screen_y as i32) - fp(32)) / fp(32);
+
+        let right = self.dir.cross(&self.up).normalized();
+
+        let dir = (self.dir + self.up * -y + right * x).normalized();
+
+        Ray { origin: self.origin, dir: dir }
+    }
+}
+
+
+pub struct Ray {
+    pub origin: V3,
+    pub dir: V3,
+}
+
+pub trait Body {
     fn intersection(&self, ray: &Ray) -> Option<Ray>;
 }
 
-struct Sphere {
-    center: V3,
-    radius: FP,
+pub struct Sphere {
+    pub center: V3,
+    pub radius: FP,
 }
 
 impl Body for Sphere {
@@ -93,5 +119,29 @@ impl Body for Sphere {
             origin: pos,
             dir: normal,
         })
+    }
+}
+
+pub struct Plane {
+    pub normal: V3,
+    pub offset: FP,
+}
+
+impl Body for Plane {
+    fn intersection(&self, ray: &Ray) -> Option<Ray> {
+        let a = self.normal.dot(&ray.dir);
+
+        if a.abs() > FP(1) {
+            let p0 = self.normal * self.offset;
+            let d = (p0 - ray.origin).dot(&self.normal) / a;
+            if d >= fp(0) {
+                return Some(Ray {
+                    origin: ray.origin + ray.dir * d,
+                    dir: self.normal,
+                });
+            }
+        }
+
+        None
     }
 }

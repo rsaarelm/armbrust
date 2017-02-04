@@ -57,8 +57,7 @@ impl Vga {
 
     pub fn putc_escaped(&self, c: char) {
         match c as u8 {
-            8 | 10 | 13 | 27 | 127 =>
-                putc(PORT, '\x1b'),
+            8 | 10 | 13 | 27 | 127 => putc(PORT, '\x1b'),
             _ => {}
         }
 
