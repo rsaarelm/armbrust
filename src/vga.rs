@@ -55,6 +55,16 @@ impl Vga {
         putc(PORT, 'H');
     }
 
+    pub fn putc_escaped(&self, c: char) {
+        match c as u8 {
+            8 | 10 | 13 | 27 | 127 =>
+                putc(PORT, '\x1b'),
+            _ => {}
+        }
+
+        putc(PORT, c);
+    }
+
     pub fn puts(&self, s: &str) {
         puts(PORT, s);
     }
@@ -108,9 +118,9 @@ impl Vga {
                 }
             }
 
-            putc(PORT, r as char);
-            putc(PORT, g as char);
-            putc(PORT, b as char);
+            self.putc_escaped(r as char);
+            self.putc_escaped(g as char);
+            self.putc_escaped(b as char);
 
         }
 
