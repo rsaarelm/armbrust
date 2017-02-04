@@ -29,10 +29,12 @@ pub extern "C" fn main() -> ! {
 
     vga.clear();
     vga.draw_screen(|x, y| {
-        if x == 0 && y == 2 {
-            return Red;
-        } else {
-            return Green;
+        match (x + y) % 4 {
+            0 => Red,
+            1 => Yellow,
+            2 => Green,
+            3 => Blue,
+            _ => Magenta,
         }
     });
 
