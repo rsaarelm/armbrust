@@ -1,3 +1,6 @@
+use core::ops::{Add, Sub, Mul, Div, Neg};
+use math::{fp, FP};
+
 #[derive(Copy, Clone)]
 pub struct V3 {
     x: FP,
@@ -5,12 +8,18 @@ pub struct V3 {
     z: FP,
 }
 
-pub fn v3(x: i32, y: i32, z: i32) -> V3 { V3::new(fp(x), fp(y), fp(z)) }
+pub fn v3(x: i32, y: i32, z: i32) -> V3 {
+    V3::new(fp(x), fp(y), fp(z))
+}
 
 impl V3 {
-    pub fn new(x: FP, y: FP, z: FP) -> V3 { V3 { x: x, y: y, z: z } }
+    pub fn new(x: FP, y: FP, z: FP) -> V3 {
+        V3 { x: x, y: y, z: z }
+    }
 
-    pub fn dot(&self, other: &V3) -> FP { self.x * other.x + self.y * other.y + self.z * other.z }
+    pub fn dot(&self, other: &V3) -> FP {
+        self.x * other.x + self.y * other.y + self.z * other.z
+    }
 
     pub fn normalized(&self) -> V3 {
         *self * (fp(1) / self.dot(self).sqrt())
@@ -20,19 +29,25 @@ impl V3 {
 impl Add for V3 {
     type Output = V3;
 
-    fn add(self, other: V3) -> V3 { V3::new(self.x + other.x, self.y + other.y, self.z + other.z) }
+    fn add(self, other: V3) -> V3 {
+        V3::new(self.x + other.x, self.y + other.y, self.z + other.z)
+    }
 }
 
 impl Sub for V3 {
     type Output = V3;
 
-    fn sub(self, other: V3) -> V3 { V3::new(self.x - other.x, self.y - other.y, self.z - other.z) }
+    fn sub(self, other: V3) -> V3 {
+        V3::new(self.x - other.x, self.y - other.y, self.z - other.z)
+    }
 }
 
 impl Mul<FP> for V3 {
     type Output = V3;
 
-    fn mul(self, other: FP) -> V3 { V3::new(self.x * other, self.y * other, self.z * other) }
+    fn mul(self, other: FP) -> V3 {
+        V3::new(self.x * other, self.y * other, self.z * other)
+    }
 }
 
 struct Ray {
@@ -65,7 +80,11 @@ impl Body for Sphere {
         let p1 = (-b - delta.sqrt()) / fp(2) * a;
         let p2 = (-b + delta.sqrt()) / fp(2) * a;
 
-        let p = if p1 < p2 { p1 } else { p2 };
+        let p = if p1 < p2 {
+            p1
+        } else {
+            p2
+        };
 
         let pos = ray.origin + ray.dir * p;
         let normal = (pos - self.center).normalized();

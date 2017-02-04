@@ -34,7 +34,5 @@ pub fn puti(uart: *mut board::UsartLayout, mut i: i32) {
 }
 
 pub fn getc(uart: *mut board::UsartLayout) -> char {
-    unsafe {
-        (*uart).recv() as u8 as char
-    }
+    unsafe { (*uart).recv() as u8 as char }
 }

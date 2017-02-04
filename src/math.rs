@@ -26,12 +26,16 @@ impl FP {
 
 impl Add for FP {
     type Output = FP;
-    fn add(self, other: FP) -> FP { FP(self.0 + other.0) }
+    fn add(self, other: FP) -> FP {
+        FP(self.0 + other.0)
+    }
 }
 
 impl Sub for FP {
     type Output = FP;
-    fn sub(self, other: FP) -> FP { FP(self.0 - other.0) }
+    fn sub(self, other: FP) -> FP {
+        FP(self.0 - other.0)
+    }
 }
 
 impl Mul<FP> for FP {
@@ -50,13 +54,15 @@ impl Div<FP> for FP {
 
 impl Neg for FP {
     type Output = FP;
-    fn neg(self) -> FP { FP(-self.0) }
+    fn neg(self) -> FP {
+        FP(-self.0)
+    }
 }
 
 
 #[cfg(test)]
 mod tests {
-    use super::{fp};
+    use super::fp;
 
     #[test]
     fn test_fp() {
