@@ -1,6 +1,5 @@
 #![feature(lang_items, compiler_builtins_lib, asm)]
 #![feature(core_intrinsics)]
-#![feature(exclusive_range_pattern)]
 
 #![no_main]
 #![no_std]
@@ -53,7 +52,7 @@ pub extern "C" fn main() -> ! {
                 Green
             }
         } else {
-           Cyan
+            Cyan
         }
     });
 
@@ -66,15 +65,22 @@ fn draw_mandelbrot(x: u32, y: u32) -> vga::Color {
     let y = (fp(y as i32) - fp(32)) / fp(16) / fp(2);
     let m = mandelbrot(x, y);
 
-    match m {
-        0 => White,
-        1..10 => Blue,
-        11..20 => Magenta,
-        21..30 => Red,
-        31..40 => Green,
-        41..50 => Yellow,
-        51..99 => Cyan,
-        _ => Black,
+    if m == 0 {
+        White
+    } else if m < 10 {
+        Blue
+    } else if m < 20 {
+        Magenta
+    } else if m < 30 {
+        Red
+    } else if m < 40 {
+        Green
+    } else if m < 50 {
+        Yellow
+    } else if m < 99 {
+        Cyan
+    } else {
+        Black
     }
 }
 

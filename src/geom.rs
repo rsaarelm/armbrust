@@ -26,7 +26,9 @@ impl V3 {
     }
 
     pub fn cross(&self, other: &V3) -> V3 {
-        V3::new(self.y * other.z - self.z * other.y, self.z * other.x - self.x * other.z, self.x * other.y - self.y * other.x)
+        V3::new(self.y * other.z - self.z * other.y,
+                self.z * other.x - self.x * other.z,
+                self.x * other.y - self.y * other.x)
     }
 }
 
@@ -71,7 +73,10 @@ impl Frustum {
 
         let dir = (self.dir + self.up * -y + right * x).normalized();
 
-        Ray { origin: self.origin, dir: dir }
+        Ray {
+            origin: self.origin,
+            dir: dir,
+        }
     }
 }
 
