@@ -53,27 +53,21 @@ impl Driver for TermDriver {
 fn main() {
     use Color::*;
     let scene = Scene
-        + Object::new(sphere_fn(v3(0, 10, 2), FP(3)), m(Material::Surface(Red, Red, Black)))
-        + Object::new(plane_fn(v3(0, 0, 1), FP(0)), m(Material::Checkerboard(Green, White)))
+        + Object::new(sphere_fn(v3(10, 5, 2), fp(3)), m(Material::Surface(Yellow, Red, Black)))
+        + Object::new(sphere_fn(v3(5, 10, 2), fp(3)), m(Material::Mirror))
+        + Object::new(sphere_fn(v3(0, 15, 2), fp(3)), m(Material::Surface(Yellow, Red, Black)))
+        + Object::new(plane_fn(v3(0, 0, 1), fp(0)), checkerboard(Material::Surface(Green, Green, Black), Material::Surface(White, White, Black)))
         ;
 
     let frustum = Frustum {
-        origin: v3(0, 0, 3),
-        dir: v3(1, 2, 0).normalized(),
+        origin: v3(0, 0, 4),
+        dir: v3(8, 4, -1).normalized(),
         up: v3(0, 0, 1),
     };
 
+    let light_dir = v3(1, 1, -4).normalized();
 
     TermDriver.draw_screen(|x, y| {
-        trace(&scene, &frustum.ray(x, y))
-        /*
-        match (x + y) % 4 {
-            0 => Color::Red,
-            1 => Color::Yellow,
-            2 => Color::Green,
-            3 => Color::Blue,
-            _ => Color::White,
-        }
-        */
+        trace(&scene, frustum.ray(x, y), &light_dir)
     });
 }

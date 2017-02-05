@@ -12,6 +12,11 @@ pub const fn fp(a: i32) -> FP {
 
 impl FP {
     pub fn sqrt(self) -> FP {
+        if self == FP(0) {
+            return FP(0)
+        } else if self < FP(0) {
+            panic!("Negative sqrt");
+        }
         // Crappy Newton's method.
         let mut x = self / fp(2);
         for _ in 0..10 {
