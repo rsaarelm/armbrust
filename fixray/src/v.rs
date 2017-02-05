@@ -1,5 +1,9 @@
 use core::ops::{Add, Sub, Mul, Neg};
-use fp::{fp, FP};
+use fp::{fp, FP, EPSILON};
+
+const I: V3 = v3(1, 0, 0);
+const J: V3 = v3(0, 1, 0);
+const K: V3 = v3(0, 0, 1);
 
 #[derive(Copy, Clone)]
 pub struct V3 {
@@ -8,12 +12,12 @@ pub struct V3 {
     pub z: FP,
 }
 
-pub fn v3(x: i32, y: i32, z: i32) -> V3 {
+pub const fn v3(x: i32, y: i32, z: i32) -> V3 {
     V3::new(fp(x), fp(y), fp(z))
 }
 
 impl V3 {
-    pub fn new(x: FP, y: FP, z: FP) -> V3 {
+    pub const fn new(x: FP, y: FP, z: FP) -> V3 {
         V3 { x: x, y: y, z: z }
     }
 
@@ -29,6 +33,14 @@ impl V3 {
         V3::new(self.y * other.z - self.z * other.y,
                 self.z * other.x - self.x * other.z,
                 self.x * other.y - self.y * other.x)
+    }
+
+    /// Normalized scalar field gradient.
+    pub fn grad<F>(&self, f: F) -> V3 where F: Fn(V3) -> FP {
+        V3::new(
+            f(*self + I * EPSILON) - f(*self - I * EPSILON),
+            f(*self + J * EPSILON) - f(*self - J * EPSILON),
+            f(*self + K * EPSILON) - f(*self - K * EPSILON))
     }
 }
 

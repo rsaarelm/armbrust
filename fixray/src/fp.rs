@@ -1,11 +1,12 @@
 use core::ops::{Add, Sub, Mul, Div, Neg};
 
-const DECIMAL_BITS: usize = 8;
+pub const DECIMAL_BITS: usize = 8;
+pub const EPSILON: FP = FP(4);
 
 #[derive(Copy, Clone, PartialOrd, Ord, PartialEq, Eq)]
 pub struct FP(pub i32);
 
-pub fn fp(a: i32) -> FP {
+pub const fn fp(a: i32) -> FP {
     FP(a << DECIMAL_BITS)
 }
 
