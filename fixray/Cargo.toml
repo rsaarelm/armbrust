@@ -1,0 +1,8 @@
+[package]
+name = "fixray"
+version = "0.1.0"
+authors = ["Risto Saarelma <risto.saarelma@iki.fi>"]
+description = "Ray-tracing with fixed-point math and no std"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
