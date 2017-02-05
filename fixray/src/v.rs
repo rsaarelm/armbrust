@@ -35,6 +35,10 @@ impl V3 {
                 self.x * other.y - self.y * other.x)
     }
 
+    pub fn abs(&self) -> FP {
+        self.dot(self).sqrt()
+    }
+
     /// Normalized scalar field gradient.
     pub fn grad<F>(&self, f: F) -> V3 where F: Fn(V3) -> FP {
         V3::new(
