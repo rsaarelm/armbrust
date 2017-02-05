@@ -8,6 +8,9 @@ mod v;
 pub use fp::{fp, FP};
 pub use v::{v3, V3};
 
+use core::cmp::min;
+use core::ops::Add;
+
 /// 3-bit color.
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum Color {
@@ -39,7 +42,69 @@ pub trait Body {
     }
 }
 
+pub struct Union<T, U> {
+    first: T,
+    second: U,
+}
 
+impl<T: Body, U: Body> Body for Union<T, U> {
+    fn distance(&self, pos: &V3) -> FP {
+        min(self.first.distance(pos), self.second.distance(pos))
+    }
+
+    fn material(&self, pos: &V3) -> Material {
+        if self.first.distance(pos) < self.second.distance(pos) {
+            self.first.material(pos)
+        } else {
+            self.second.material(pos)
+        }
+    }
+
+    fn normal(&self, pos: &V3) -> V3 {
+        // Overriding this so that it'll fall into the cheaper component method before starting the
+        // expensive gradient operation.
+        if self.first.distance(pos) < self.second.distance(pos) {
+            self.first.normal(pos)
+        } else {
+            self.second.normal(pos)
+        }
+    }
+}
+
+impl <T: Body, U: Body, V: Body> Add<V> for Union<T, U> {
+    type Output = Union<Union<T, U>, V>;
+
+    fn add(self, other: V) -> Self::Output {
+        Union {
+            first: self,
+            second: other,
+        }
+    }
+}
+
+// Dummy type to start a scene.
+pub struct Scene;
+
+impl Body for Scene {
+    fn distance(&self, pos: &V3) -> FP {
+        FP(i32::max_value())
+    }
+
+    fn material(&self, pos: &V3) -> Material {
+        Material::Surface(Color::Cyan, Color::Cyan, Color::Cyan)
+    }
+}
+
+impl <T: Body> Add<T> for Scene {
+    type Output = Union<Scene, T>;
+
+    fn add(self, other: T) -> Self::Output {
+        Union {
+            first: self,
+            second: other,
+        }
+    }
+}
 
 pub enum Material {
     // Perfect reflection.
@@ -49,8 +114,4 @@ pub enum Material {
     // XXX: Would be nicer to have the subelements be other Materials, but we'd need boxes for
     // that.
     Checkerboard(Color, Color),
-}
-
-pub trait Scene {
-
 }
