@@ -1,5 +1,5 @@
 use fp::{fp, FP};
-use v::{v3, V3};
+use v::V3;
 
 pub struct Frustum {
     pub origin: V3,
