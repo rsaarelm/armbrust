@@ -2,23 +2,12 @@
 
 use stm32f030r8 as board;
 use io::*;
+use fixray::Color;
 
 const PORT: *mut board::UsartLayout = board::USART1;
 
 pub const SCREEN_W: usize = 32;
 pub const SCREEN_H: usize = 16;
-
-#[derive(Copy, Clone, Eq, PartialEq)]
-pub enum Color {
-    Black,
-    Red,
-    Green,
-    Yellow,
-    Blue,
-    Magenta,
-    Cyan,
-    White,
-}
 
 pub struct Vga;
 

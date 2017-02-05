@@ -9,3 +9,4 @@ lto = true
 
 [dependencies]
 compiler_builtins = { git = "https://github.com/rust-lang-nursery/compiler-builtins", features = ["mem"] }
+fixray = { path = "fixray" }
