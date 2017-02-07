@@ -1,0 +1,9 @@
+(A) 2017-02-06 Bodies can support direct intersection formula, intersect: Ray -> Option<Option<(FP, Hit)>> (Hit struct gives normal and material), closed form for plane and sphere
+(B) 2017-02-06 Emit full-color PPM from example
+(B) 2017-02-06 More flexible trace API, trace from surface to light source for shadow
+(B) 2017-02-06 Rename project to 'fixray'
+(B) 2017-02-06 Test optlevel z, max size optimization
+(B) 2017-02-06 Truecolor type, FP [0.0, 1.0] range, linear RGB?
+(B) 2017-02-06 Variable frustum resolution for larger-scale PPM output
+(C) 2017-02-06 Grow raymarch step when ray is far from camera
+(C) 2017-02-06 Optional AABB for nodes
